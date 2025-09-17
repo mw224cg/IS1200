@@ -91,9 +91,9 @@ int main()
   print_word( "AM7: p", &p );   
   print_word( "AM8: m", &m );
 
-  p = (int*)cp;   /* Casting a char pointer to an integer pointer */
+  p = (int*)cp;   //p points to address of cp (cs[0]) but reads 4 bytes (sizeof int)
 
-  print_word( "AM9: p", &p );
+  print_word( "AM9: p", &p ); //prints value at adress p in dec = adress of cs[0] = 0x00100A48 = 1051208
 
   //Prints address and value of cs[0-3]
 
@@ -102,12 +102,13 @@ int main()
   print_byte( "AM12: cs[2]", &cs[2] );
   print_byte( "AM13: cs[3]", &cs[3] );
 
-  *p = 0x1234abcd; /* It starts to get interesting... */
+  *p = 0x1234abcd; //p points to cs[0] as an int (4byte), dereference p change value of cs[0]
+                   // 
 
-  print_byte( "AM14: cs[0]", &cs[0] );
-  print_byte( "AM15: cs[1]", &cs[1] ); 
-  print_byte( "AM16: cs[2]", &cs[2] );
-  print_byte( "AM17: cs[3]", &cs[3] );
+  print_byte( "AM14: cs[0]", &cs[0] ); //=205 = CD
+  print_byte( "AM15: cs[1]", &cs[1] ); // = 171 = AB
+  print_byte( "AM16: cs[2]", &cs[2] ); // = 52 = 34
+  print_byte( "AM17: cs[3]", &cs[3] ); // = 18 = 12
 
   fun(m); //m = 8 -> 9, gv = 9
 
@@ -158,10 +159,54 @@ AF1: param : address=0x00100A44 : value=9
 AM18: m : address=0x00100A3C : value=8
 AM19: gv : address=0x000008E8 : value=9
 
+2. Pointer cp is a character pointer that points to a sequence of bytes.
+What is the size of the cp pointer itself?
+
+Storleken på en pekare är 32-bitar (i 64-bits arkitektur = 64 bitar)
+
+3. Explain how a C string is laid out in memory. Why does the character string that cp
+ points to have to be 9 bytes?
+
+Eftersom strängen 'Bonjour!' = 8 st char + null terminator '0' = 9char
+--> 'Bonjour!0x0'
+Varje char är 1 byte/8bitar
 
 
+Part 2:
+1.  Which addresses are variables in and gv located at?
 
- 
- 
- 
+AM1: gv : address=0x000008E8 
+AM2: in : address=0x000008E4 
+
+2.  Variables p and m are not global variables. Where are they allocated? Which memory section
+ is used for these variables? Why are the address numbers for p and m much larger than for in
+ and gv?
+
+ p, m är lokala variabler i main(), lokala variabler sparas på stacken.
+ Skillnaden mot globala variablers adresser (som sparas i .data) är troligast för
+ att stacken ligger i ett annat segment med högre addresstal
+
+3. At print statement AM5, what is the address of pointer p, what is the value of pointer p, and
+ what value is pointer p pointing to?
+
+p = &m; //Set value of p to address of m
+AM5: p : address=0x00100A40 : value=1051196 (0x00100A3C)
+AM6: m : address=0x00100A3C : value=7
+
+p pekar på värdet 7
+
+4. At print statement AM7, what is the address of pointer p, what is the value of pointer p, and
+ what value is pointer p pointing to?
+
+AM7: p : address=0x00100A40 : value=1051196
+
+p är samma som i fråga 3, den pekar fortfarande på m
+dock har m ändrats genom att dereferera p genom:
+*p = *p + 1;
+så värdet p pekar på är 8
+
+5. Consider AM14 to AM17. Is the RISC-V processor using big-endian or little-endian? Why?
+
+RISC-V processorn är LE eftersom LSB sparas på lägsta adressen
+
  */
